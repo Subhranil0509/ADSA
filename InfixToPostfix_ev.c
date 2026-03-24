@@ -1,108 +1,63 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 
 #define MAX 50
 
-char stack[MAX];
+int stack[MAX];
 int top = -1;
 
-/* Stack operations */
-void push(char x)
+void push(int value)
 {
-    stack[++top] = x;
+    stack[++top] = value;
 }
 
-char pop()
+int pop()
 {
     return stack[top--];
 }
 
-/* Operator precedence */
-int precedence(char x)
+int main()
 {
-    if (x == '+' || x == '-') return 1;
-    if (x == '*' || x == '/') return 2; 
-    return 0;
-}
+    char postfix[MAX];
+    int i = 0, num = 0;
 
-/* Infix to Postfix conversion */
-void infixToPostfix(char infix[], char postfix[])
-{
-    int i = 0, k = 0;
-    char x;
-
-    while (infix[i] != '\0')
-    {
-        if (isalnum(infix[i]))   // operand
-        {
-            postfix[k++] = infix[i];
-        }
-        else if (infix[i] == '(')
-        {
-            push(infix[i]);
-        }
-        else if (infix[i] == ')')
-        {
-            while ((x = pop()) != '(')
-                postfix[k++] = x;
-        }
-        else    // operator
-        {
-            while (top != -1 && precedence(stack[top]) >= precedence(infix[i]))
-                postfix[k++] = pop();
-            push(infix[i]);
-        }
-        i++;
-    }
-
-    while (top != -1)
-        postfix[k++] = pop();
-
-    postfix[k] = '\0';
-}
-
-/* Evaluate Postfix expression */
-int evaluatePostfix(char postfix[])
-{
-    int i = 0;
-    int valStack[MAX];
-    int valTop = -1;
+    printf("Enter Postfix Expression (use comma): ");
+    scanf("%s", postfix);
 
     while (postfix[i] != '\0')
     {
         if (isdigit(postfix[i]))
         {
-            valStack[++valTop] = postfix[i] - '0';
+            num = 0;
+            while (isdigit(postfix[i]))
+            {
+                num = num * 10 + (postfix[i] - '0');
+                i++;
+            }
+            push(num);
+            i--; // adjust index
+        }
+        else if (postfix[i] == ',')
+        {
+            // skip comma
         }
         else
         {
-            int b = valStack[valTop--];
-            int a = valStack[valTop--];
+            int op2 = pop();
+            int op1 = pop();
 
             switch (postfix[i])
             {
-                case '+': valStack[++valTop] = a + b; break;
-                case '-': valStack[++valTop] = a - b; break;
-                case '*': valStack[++valTop] = a * b; break;
-                case '/': valStack[++valTop] = a / b; break;
+                case '+': push(op1 + op2); break;
+                case '-': push(op1 - op2); break;
+                case '*': push(op1 * op2); break;
+                case '/': push(op1 / op2); break;
             }
         }
         i++;
     }
-    return valStack[valTop];
-}
 
-int main()
-{
-    char infix[MAX], postfix[MAX];
-
-    printf("Enter infix expression: ");
-    scanf("%s", infix);
-
-    infixToPostfix(infix, postfix);
-
-    printf("Postfix expression: %s\n", postfix);
-    printf("Evaluation result: %d\n", evaluatePostfix(postfix));
-
+    printf("Result = %d\n", pop());
     return 0;
 }
